@@ -1,20 +1,6 @@
-import { type EdgeProps } from '@xyflow/react';
+import { type EdgeProps, getBezierPath } from '@xyflow/react';
 import { motion } from 'framer-motion';
 import type { AnimatedEdge } from '../types';
-
-// Generate natural curved branch path
-function generateBranchPath(
-  sourceX: number,
-  sourceY: number,
-  targetX: number,
-  targetY: number
-): string {
-  // Natural tree branches have gentle curves
-  const midY = (sourceY + targetY) / 2;
-  const controlOffset = (targetX - sourceX) * 0.2;
-
-  return `M ${sourceX} ${sourceY} C ${sourceX + controlOffset} ${midY}, ${targetX - controlOffset} ${midY}, ${targetX} ${targetY}`;
-}
 
 export default function AnimatedEdgeComponent({
   id,
@@ -22,70 +8,118 @@ export default function AnimatedEdgeComponent({
   sourceY,
   targetX,
   targetY,
+  sourcePosition,
+  targetPosition,
   data,
 }: EdgeProps<AnimatedEdge>) {
   const isNew = data?.isNew ?? false;
-  const edgePath = generateBranchPath(sourceX, sourceY, targetX, targetY);
 
-  // Branch thickness varies slightly
-  const thickness = 4 + Math.random() * 2;
+  // Get the bezier path
+  const [edgePath] = getBezierPath({
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+  });
+
+  // Calculate distance for thickness variation
+  const distance = Math.sqrt(Math.pow(targetX - sourceX, 2) + Math.pow(targetY - sourceY, 2));
+
+  // Thicker at source (closer to trunk), thinner toward tips
+  const depth = (data as { depth?: number })?.depth || 0;
+  const sourceThickness = Math.max(8, 20 - depth * 4);
+
+  // Wood colors - darker bark on outside, lighter inside
+  const barkColor = '#4a3728';
+  const woodColor = '#6b4423';
+  const highlightColor = '#8b6914';
 
   return (
     <g>
-      {/* Branch shadow */}
+      {/* Bark shadow - gives depth */}
       <motion.path
         d={edgePath}
         fill="none"
-        stroke="rgba(0,0,0,0.3)"
-        strokeWidth={thickness + 2}
+        stroke="rgba(0,0,0,0.4)"
+        strokeWidth={sourceThickness + 4}
         strokeLinecap="round"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        style={{ filter: 'blur(2px)' }}
-      />
-
-      {/* Main branch - wood colored */}
-      <motion.path
-        id={id}
-        d={edgePath}
-        fill="none"
-        stroke={`url(#branch-gradient-${id})`}
-        strokeWidth={thickness}
-        strokeLinecap="round"
-        initial={isNew ? { pathLength: 0, opacity: 0 } : { pathLength: 1, opacity: 1 }}
+        initial={isNew ? { pathLength: 0, opacity: 0 } : {}}
         animate={{ pathLength: 1, opacity: 1 }}
-        transition={{
-          pathLength: { duration: 0.6, ease: 'easeOut' },
-          opacity: { duration: 0.3 },
-        }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
+        style={{ filter: 'blur(3px)' }}
       />
 
-      {/* Inner wood grain highlight */}
+      {/* Main branch - outer bark */}
       <motion.path
         d={edgePath}
         fill="none"
-        stroke="rgba(160,82,45,0.4)"
-        strokeWidth={thickness * 0.4}
+        stroke={barkColor}
+        strokeWidth={sourceThickness}
         strokeLinecap="round"
-        strokeDasharray="8 12"
-        initial={isNew ? { pathLength: 0 } : { pathLength: 1 }}
+        initial={isNew ? { pathLength: 0, opacity: 0 } : {}}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+      />
+
+      {/* Inner wood layer */}
+      <motion.path
+        d={edgePath}
+        fill="none"
+        stroke={woodColor}
+        strokeWidth={sourceThickness * 0.7}
+        strokeLinecap="round"
+        initial={isNew ? { pathLength: 0 } : {}}
         animate={{ pathLength: 1 }}
         transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
       />
 
-      {/* Gradient for natural wood look */}
+      {/* Wood grain highlight */}
+      <motion.path
+        d={edgePath}
+        fill="none"
+        stroke={highlightColor}
+        strokeWidth={sourceThickness * 0.3}
+        strokeLinecap="round"
+        strokeDasharray="15 25"
+        initial={isNew ? { pathLength: 0, opacity: 0 } : { opacity: 0.5 }}
+        animate={{ pathLength: 1, opacity: 0.5 }}
+        transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+      />
+
+      {/* Small knots/texture on branches */}
+      {distance > 60 && (
+        <motion.circle
+          cx={sourceX + (targetX - sourceX) * 0.4}
+          cy={sourceY + (targetY - sourceY) * 0.4}
+          r={sourceThickness * 0.25}
+          fill={barkColor}
+          initial={isNew ? { scale: 0 } : {}}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.5, duration: 0.3 }}
+        />
+      )}
+
+      {/* Growing tip animation */}
+      {isNew && (
+        <motion.circle
+          cx={targetX}
+          cy={targetY}
+          r={6}
+          fill="#90EE90"
+          initial={{ scale: 0, opacity: 1 }}
+          animate={{ scale: [0, 2, 0], opacity: [1, 0.5, 0] }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+        />
+      )}
+
+      {/* Gradient definition */}
       <defs>
-        <linearGradient
-          id={`branch-gradient-${id}`}
-          x1="0%"
-          y1="0%"
-          x2="0%"
-          y2="100%"
-        >
-          <stop offset="0%" stopColor="#8B4513" />
-          <stop offset="30%" stopColor="#A0522D" />
-          <stop offset="70%" stopColor="#654321" />
-          <stop offset="100%" stopColor="#8B4513" />
+        <linearGradient id={`bark-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={barkColor} />
+          <stop offset="50%" stopColor={woodColor} />
+          <stop offset="100%" stopColor={barkColor} />
         </linearGradient>
       </defs>
     </g>
