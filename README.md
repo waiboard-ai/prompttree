@@ -1,12 +1,30 @@
 # 🌳 Promptree
 
-**Stop prompt engineering. Start prompt farming.**  
+**Stop prompt engineering. Start prompt farming.**
 
 Cultivate ideas → evolve prompts → harvest creativity.
 
-Promptree is an open-source framework for **growing AI prompts like a tree**, inspired by nature.  
-Instead of manually iterating, you plant a **seed prompt**, define **growth conditions**,  
-and the system evolves new branches until you harvest **fruit-level prompts**.
+Promptree is an **interactive web-based tool** for **growing AI prompts like a tree**, inspired by nature.
+Watch your prompts evolve in real-time, interact with branches, and guide your tree's growth visually.
+Plant a **seed prompt**, nurture it with **light and soil**, and watch it blossom into **fruit-level prompts**.
+
+---
+
+## ✨ Live Demo
+
+> **[Try Promptree Now →](https://promptree.app)**
+> Plant a seed. Watch it grow. Harvest your prompts.
+
+---
+
+## 🎮 Interactive Features
+
+- **🌲 Visual Tree View** — Watch your prompt tree grow in real-time with an interactive visualization
+- **🖱️ Click to Branch** — Select any node to spawn new variations and explore different directions
+- **🔍 Live Evolution** — See prompts mutate, compete, and evolve right before your eyes
+- **✂️ Prune & Guide** — Cut weak branches, boost promising ones, and shape your tree's growth
+- **📊 Fitness Dashboard** — Track scores, see which branches are thriving, and understand why
+- **🍎 One-Click Harvest** — Export your best prompts when they're ripe and ready
 
 ---
 
@@ -21,67 +39,95 @@ and the system evolves new branches until you harvest **fruit-level prompts**.
 | 🌸 **Flowers**   | High-potential prompts (promising branches) |
 | 🍎 **Fruits**    | Final yield → surprising, useful outputs   |
 
-
 ---
 
 ## 🌱 How it Works
 
-1. `seed` → Provide a base idea or starting prompt  
-2. `light` → Define direction (style, tone, goals)  
-3. `soil` → Add constraints + scoring metrics  
-4. `grow` → System mutates + generates branches  
-5. `select` → Good branches survive, weak ones die  
-6. `harvest` → Flowers = strong candidates,  
-   Fruits = polished prompt outputs ready to use
+### In the Web App:
 
-> Evolutionary prompting — but fun.
+1. **Plant** → Type your seed idea into the input field
+2. **Configure** → Set your light (tone/style) and soil (constraints) in the sidebar
+3. **Grow** → Click "Grow" and watch branches spawn in real-time
+4. **Interact** → Click any node to expand it, prune weak branches, or boost strong ones
+5. **Evolve** → Let the system run generations, or manually guide evolution
+6. **Harvest** → Click on any fruit 🍎 to copy your polished prompt
+
+> Evolutionary prompting — visual, interactive, and fun.
 
 ---
 
-## 🧪 Example
+## 🖥️ Screenshot
 
-```ts
-const seed = "Write a product pitch for an AI toothbrush";
+```
+        🌱 "Write a product pitch"
+              │
+    ┌─────────┼─────────┐
+    │         │         │
+   🌿        🌿        🌿
+ playful   formal    witty
+    │         │         │
+   🌸        ✂️        🌸
+ "Your     [pruned]  "Plaque
+ mouth               meets its
+ has                 match"
+ version               │
+ control"             🍎
+    │              [HARVEST]
+   🍎
+[HARVEST]
+```
 
-const light = {
-  tone: "playful but professional",
-  audience: "VC investors",
-};
+---
 
-const soil = {
-  score: (out) => semanticQuality(out) + humor(out) - fluff(out),
-  threshold: 0.75
-};
+## 🧪 Quick Start
 
-grow(seed, light, soil).then(tree => harvest(tree, "fruits"));
-````
+### Option 1: Use the Web App
+Simply visit **[promptree.app](https://promptree.app)** and start growing!
 
-Output may include:
+### Option 2: Self-Host
+```bash
+git clone https://github.com/your-org/promptree.git
+cd promptree
+npm install
+npm run dev
+```
 
-🍒 *"Your mouth has version control now."*
-🍎 *"Plaque has met its match — and it's powered by transformers."*
+Then open `http://localhost:3000` in your browser.
 
 ---
 
 ## 🌼 Why Promptree?
 
-* prompts evolve automatically
-* encourages exploration, not trial-and-error
-* yields unexpected creative outcomes
-* visual + tree structured
-* gardening metaphor is **fun + intuitive**
+* **Visual & Interactive** — See your prompts evolve, don't just read logs
+* **Real-time Evolution** — Watch mutations happen live in your browser
+* **Hands-on Control** — Click, prune, boost, and guide your tree's growth
+* **Exploratory** — Discover unexpected creative directions
+* **Fun** — The gardening metaphor makes prompting enjoyable
 
 This is prompting for humans, not machines.
 
 ---
 
+## 🎯 Use Cases
+
+- **Creative Writing** — Evolve story premises, character descriptions, or dialogue
+- **Marketing Copy** — Grow variations of headlines, taglines, and pitches
+- **Code Generation** — Refine technical prompts for better AI-generated code
+- **Brainstorming** — Explore idea spaces visually and find unexpected connections
+- **Prompt Research** — Understand how small changes affect AI outputs
+
+---
+
 ## 🍇 Roadmap
 
-* [ ] Web UI prompt orchard 🌾
-* [ ] Prompt evolution visualizer 🌿
-* [ ] Automatic genetic mutation modes 🍀
-* [ ] Plug-in scoring models + fitness functions
-* [ ] Open prompt marketplace: trade your fruits 🍎
+- [x] Web UI prompt orchard 🌾
+- [x] Prompt evolution visualizer 🌿
+- [x] Interactive tree manipulation
+- [ ] Collaborative gardens — grow trees with friends 👥
+- [ ] Automatic genetic mutation modes 🍀
+- [ ] Plug-in scoring models + fitness functions
+- [ ] Open prompt marketplace: trade your fruits 🍎
+- [ ] Mobile app for on-the-go gardening 📱
 
 ---
 
@@ -95,4 +141,4 @@ Together we'll grow a forest.
 
 ### License: MIT
 
-**🌳 promptree – prompt grows, mind expands.**
+**🌳 Promptree – Watch your prompts grow. Shape your ideas visually.**
