@@ -11,11 +11,9 @@ import '@xyflow/react/dist/style.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import TreeNodeComponent from './components/TreeNode';
 import AnimatedEdgeComponent from './components/AnimatedEdge';
-import ThemeSelector from './components/ThemeSelector';
 import AmbientBackground from './components/AmbientBackground';
 import { useTreeStore, useNodes, useEdges, useResources, useSimulationState } from './store/treeStore';
 import { mockGrowthService, type GrowthEvent } from './services/mockGrowthService';
-import { getThemeById } from './themes/treeThemes';
 import type { AppNode, TreeNode } from './types';
 
 const nodeTypes = { treeNode: TreeNodeComponent };
@@ -23,7 +21,7 @@ const edgeTypes = { animatedEdge: AnimatedEdgeComponent };
 
 type GameAction = 'grow' | 'evolve' | 'prune' | null;
 
-// Speed presets in milliseconds
+// Speed presets
 const SPEED_PRESETS = [
   { label: '0.5x', value: 4000 },
   { label: '1x', value: 2000 },
@@ -36,8 +34,6 @@ function TreeVisualization() {
   const edges = useEdges();
   const { sunlight, water, score } = useResources();
   const { isAutoGrowing, isPaused } = useSimulationState();
-  const currentTheme = useTreeStore(s => s.currentTheme);
-  const theme = getThemeById(currentTheme);
 
   const growBranch = useTreeStore(s => s.growBranch);
   const evolveNode = useTreeStore(s => s.evolveNode);
@@ -112,7 +108,7 @@ function TreeVisualization() {
   const onNodeClick: NodeMouseHandler<AppNode> = useCallback((_event, node) => {
     if (action === 'grow') {
       if (growBranch(node.id)) {
-        showMessage('New branches sprouted!');
+        showMessage('New branch sprouted!');
       } else {
         showMessage('Not enough resources!');
       }
@@ -120,9 +116,9 @@ function TreeVisualization() {
     } else if (action === 'evolve') {
       const treeNode = node as TreeNode;
       if (treeNode.data?.stage === 'fruit') {
-        showMessage('Already fully evolved!');
+        showMessage('Already fully grown!');
       } else if (evolveNode(node.id)) {
-        showMessage('Node evolved!');
+        showMessage('Branch evolved!');
       } else {
         showMessage('Not enough resources!');
       }
@@ -131,7 +127,7 @@ function TreeVisualization() {
       if (node.id === '0') {
         showMessage("Can't prune the seed!");
       } else if (pruneNode(node.id)) {
-        showMessage('Branch pruned! Recovered some water.');
+        showMessage('Branch pruned!');
       }
       setAction(null);
     }
@@ -139,7 +135,6 @@ function TreeVisualization() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      {/* Themed ambient background */}
       <AmbientBackground />
 
       {/* Header */}
@@ -152,408 +147,295 @@ function TreeVisualization() {
           left: 0,
           right: 0,
           zIndex: 10,
-          padding: '16px 24px',
-          background: 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%)',
+          padding: '12px 24px',
+          background: 'linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <h1 style={{
-            color: theme.branch.glowColor,
-            fontSize: 28,
-            fontWeight: 700,
-            textShadow: `0 0 20px ${theme.branch.glowColor}50`
-          }}>
-            Promptree
-          </h1>
-          <ThemeSelector />
-        </div>
-        <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-          <div style={{ color: theme.ambient.particleColors[0], fontSize: 14 }}>
-            Nodes: {nodes.length}
-          </div>
-          <div style={{ color: '#fbbf24', fontSize: 20, fontWeight: 600 }}>
-            Score: {score}
-          </div>
+        <h1 style={{ color: '#228B22', fontSize: 24, fontWeight: 700 }}>
+          Promptree
+        </h1>
+        <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+          <span style={{ color: '#fff', fontSize: 14 }}>Branches: {nodes.length}</span>
+          <span style={{ color: '#FFD700', fontSize: 18, fontWeight: 600 }}>Score: {score}</span>
         </div>
       </motion.div>
 
-      {/* Simulation Controls Panel */}
+      {/* Controls */}
       <motion.div
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ delay: 0.1 }}
         style={{
           position: 'absolute',
-          top: 70,
+          top: 60,
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 10,
-          background: 'rgba(0,0,0,0.8)',
-          borderRadius: 16,
-          padding: '12px 20px',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: 'rgba(0,0,0,0.75)',
+          borderRadius: 12,
+          padding: '10px 16px',
           display: 'flex',
-          gap: 16,
+          gap: 12,
           alignItems: 'center',
         }}
       >
-        {/* Play/Pause Button */}
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={handleToggleSimulation}
           style={{
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             borderRadius: '50%',
             border: 'none',
-            background: isAutoGrowing
-              ? 'linear-gradient(135deg, #ef4444, #dc2626)'
-              : 'linear-gradient(135deg, #22c55e, #16a34a)',
+            background: isAutoGrowing ? '#DC143C' : '#228B22',
             color: '#fff',
-            fontSize: 20,
+            fontSize: 18,
             cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: isAutoGrowing
-              ? '0 0 20px rgba(239, 68, 68, 0.5)'
-              : '0 0 20px rgba(34, 197, 94, 0.5)',
           }}
         >
           {isAutoGrowing ? '⏹' : '▶'}
         </motion.button>
 
-        {/* Pause Button (only when running) */}
-        <AnimatePresence>
-          {isAutoGrowing && (
-            <motion.button
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleTogglePause}
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: '50%',
-                border: 'none',
-                background: isPaused
-                  ? 'linear-gradient(135deg, #fbbf24, #f59e0b)'
-                  : 'rgba(255,255,255,0.2)',
-                color: '#fff',
-                fontSize: 18,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {isPaused ? '▶' : '⏸'}
-            </motion.button>
-          )}
-        </AnimatePresence>
+        {isAutoGrowing && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.1 }}
+            onClick={handleTogglePause}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              border: 'none',
+              background: isPaused ? '#FFD700' : 'rgba(255,255,255,0.2)',
+              color: '#fff',
+              fontSize: 16,
+              cursor: 'pointer',
+            }}
+          >
+            {isPaused ? '▶' : '⏸'}
+          </motion.button>
+        )}
 
-        {/* Speed Controls */}
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginRight: 4 }}>Speed:</span>
+        <div style={{ display: 'flex', gap: 4 }}>
           {SPEED_PRESETS.map((preset) => (
-            <motion.button
+            <button
               key={preset.value}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               onClick={() => handleSpeedChange(preset.value)}
               style={{
-                padding: '6px 12px',
-                borderRadius: 8,
+                padding: '5px 10px',
+                borderRadius: 6,
                 border: 'none',
-                background: selectedSpeed === preset.value
-                  ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)'
-                  : 'rgba(255,255,255,0.1)',
+                background: selectedSpeed === preset.value ? '#228B22' : 'rgba(255,255,255,0.15)',
                 color: '#fff',
-                fontSize: 12,
-                fontWeight: selectedSpeed === preset.value ? 600 : 400,
+                fontSize: 11,
                 cursor: 'pointer',
               }}
             >
               {preset.label}
-            </motion.button>
+            </button>
           ))}
         </div>
 
-        {/* Reset Button */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+        <button
           onClick={handleReset}
           style={{
-            padding: '8px 16px',
-            borderRadius: 8,
-            border: '1px solid rgba(255,255,255,0.2)',
+            padding: '6px 12px',
+            borderRadius: 6,
+            border: '1px solid rgba(255,255,255,0.3)',
             background: 'transparent',
             color: '#fff',
-            fontSize: 12,
+            fontSize: 11,
             cursor: 'pointer',
           }}
         >
           Reset
-        </motion.button>
+        </button>
 
-        {/* Status indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <motion.div
-            animate={{
-              scale: isAutoGrowing && !isPaused ? [1, 1.3, 1] : 1,
-              opacity: isAutoGrowing ? 1 : 0.5,
-            }}
-            transition={{ duration: 1, repeat: Infinity }}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div
             style={{
-              width: 10,
-              height: 10,
+              width: 8,
+              height: 8,
               borderRadius: '50%',
-              background: isAutoGrowing
-                ? isPaused ? '#fbbf24' : '#22c55e'
-                : '#6b7280',
+              background: isAutoGrowing ? (isPaused ? '#FFD700' : '#32CD32') : '#666',
             }}
           />
-          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
-            {isAutoGrowing ? (isPaused ? 'Paused' : 'Growing...') : 'Stopped'}
+          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>
+            {isAutoGrowing ? (isPaused ? 'Paused' : 'Growing') : 'Stopped'}
           </span>
         </div>
       </motion.div>
 
-      {/* Resources Panel */}
+      {/* Resources */}
       <motion.div
         initial={{ x: -200 }}
         animate={{ x: 0 }}
-        transition={{ type: 'spring', stiffness: 100 }}
         style={{
           position: 'absolute',
-          left: 16,
+          left: 12,
           top: '50%',
           transform: 'translateY(-50%)',
           zIndex: 10,
           background: 'rgba(0,0,0,0.7)',
-          borderRadius: 16,
-          padding: 20,
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          minWidth: 180,
+          borderRadius: 12,
+          padding: 16,
+          minWidth: 160,
         }}
       >
-        <h3 style={{ color: '#fff', marginBottom: 16, fontSize: 14, opacity: 0.7 }}>RESOURCES</h3>
+        <h3 style={{ color: '#fff', marginBottom: 12, fontSize: 13, opacity: 0.7 }}>RESOURCES</h3>
 
-        {/* Sunlight */}
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 20 }}>☀️</span>
-              <span style={{ color: '#fbbf24', fontSize: 14 }}>Sunlight</span>
-            </div>
-            <span style={{ color: '#fbbf24', fontSize: 12 }}>{Math.round(sunlight)}%</span>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ color: '#FFD700', fontSize: 13 }}>☀️ Sun</span>
+            <span style={{ color: '#FFD700', fontSize: 11 }}>{Math.round(sunlight)}%</span>
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 8, height: 12, overflow: 'hidden' }}>
+          <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 6, height: 8 }}>
             <motion.div
               animate={{ width: `${sunlight}%` }}
-              transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-              style={{
-                height: '100%',
-                background: 'linear-gradient(90deg, #f59e0b, #fbbf24)',
-                borderRadius: 8,
-                boxShadow: '0 0 10px #fbbf2480',
-              }}
+              style={{ height: '100%', background: '#FFD700', borderRadius: 6 }}
             />
           </div>
         </div>
 
-        {/* Water */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 20 }}>💧</span>
-              <span style={{ color: '#60a5fa', fontSize: 14 }}>Water</span>
-            </div>
-            <span style={{ color: '#60a5fa', fontSize: 12 }}>{Math.round(water)}%</span>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ color: '#60a5fa', fontSize: 13 }}>💧 Water</span>
+            <span style={{ color: '#60a5fa', fontSize: 11 }}>{Math.round(water)}%</span>
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 8, height: 12, overflow: 'hidden' }}>
+          <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 6, height: 8 }}>
             <motion.div
               animate={{ width: `${water}%` }}
-              transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-              style={{
-                height: '100%',
-                background: 'linear-gradient(90deg, #3b82f6, #60a5fa)',
-                borderRadius: 8,
-                boxShadow: '0 0 10px #60a5fa80',
-              }}
+              style={{ height: '100%', background: '#60a5fa', borderRadius: 6 }}
             />
           </div>
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+        <button
           onClick={addResources}
           style={{
             width: '100%',
-            padding: '10px 16px',
-            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+            padding: '8px',
+            background: '#228B22',
             border: 'none',
-            borderRadius: 8,
+            borderRadius: 6,
             color: '#fff',
             fontWeight: 600,
             cursor: 'pointer',
-            fontSize: 14,
-            boxShadow: '0 0 15px rgba(34, 197, 94, 0.3)',
+            fontSize: 12,
           }}
         >
-          Gather Resources
-        </motion.button>
+          Gather
+        </button>
       </motion.div>
 
-      {/* Actions Panel */}
+      {/* Actions */}
       <motion.div
         initial={{ x: 200 }}
         animate={{ x: 0 }}
-        transition={{ type: 'spring', stiffness: 100 }}
         style={{
           position: 'absolute',
-          right: 16,
+          right: 12,
           top: '50%',
           transform: 'translateY(-50%)',
           zIndex: 10,
           background: 'rgba(0,0,0,0.7)',
-          borderRadius: 16,
-          padding: 20,
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 12,
+          padding: 16,
         }}
       >
-        <h3 style={{ color: '#fff', marginBottom: 16, fontSize: 14, opacity: 0.7 }}>MANUAL ACTIONS</h3>
+        <h3 style={{ color: '#fff', marginBottom: 12, fontSize: 13, opacity: 0.7 }}>ACTIONS</h3>
 
         {[
-          { id: 'grow', emoji: '🌱', label: 'Grow', desc: 'Add branches', color: '#22c55e' },
-          { id: 'evolve', emoji: '✨', label: 'Evolve', desc: 'Level up node', color: '#a855f7' },
-          { id: 'prune', emoji: '✂️', label: 'Prune', desc: 'Remove branch', color: '#ef4444' },
+          { id: 'grow', emoji: '🌱', label: 'Grow', color: '#228B22' },
+          { id: 'evolve', emoji: '✨', label: 'Evolve', color: '#a855f7' },
+          { id: 'prune', emoji: '✂️', label: 'Prune', color: '#DC143C' },
         ].map((btn) => (
-          <motion.button
+          <button
             key={btn.id}
-            whileHover={{ scale: 1.05, x: -5 }}
-            whileTap={{ scale: 0.95 }}
             onClick={() => setAction(action === btn.id ? null : btn.id as GameAction)}
             style={{
               width: '100%',
-              padding: '12px 16px',
-              marginBottom: 10,
-              background: action === btn.id
-                ? `linear-gradient(135deg, ${btn.color}, ${btn.color}aa)`
-                : 'rgba(255,255,255,0.1)',
+              padding: '10px 14px',
+              marginBottom: 8,
+              background: action === btn.id ? btn.color : 'rgba(255,255,255,0.1)',
               border: action === btn.id ? `2px solid ${btn.color}` : '2px solid transparent',
-              borderRadius: 12,
+              borderRadius: 8,
               color: '#fff',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: 12,
-              transition: 'all 0.2s',
+              gap: 10,
+              fontSize: 13,
             }}
           >
-            <span style={{ fontSize: 24 }}>{btn.emoji}</span>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>{btn.label}</div>
-              <div style={{ fontSize: 11, opacity: 0.7 }}>{btn.desc}</div>
-            </div>
-          </motion.button>
+            <span style={{ fontSize: 20 }}>{btn.emoji}</span>
+            {btn.label}
+          </button>
         ))}
 
         {action && (
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{
-              color: '#fbbf24',
-              fontSize: 12,
-              textAlign: 'center',
-              marginTop: 8,
-            }}
-          >
+          <p style={{ color: '#FFD700', fontSize: 11, textAlign: 'center', marginTop: 4 }}>
             Click a node to {action}
-          </motion.p>
+          </p>
         )}
       </motion.div>
 
-      {/* Event Log */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
+      {/* Growth Log */}
+      <div
         style={{
           position: 'absolute',
-          bottom: 16,
-          left: 16,
+          bottom: 12,
+          left: 12,
           zIndex: 10,
           background: 'rgba(0,0,0,0.6)',
-          padding: '12px 16px',
-          borderRadius: 10,
-          maxWidth: 280,
-          maxHeight: 150,
-          overflow: 'hidden',
+          padding: '10px 14px',
+          borderRadius: 8,
+          maxWidth: 240,
         }}
       >
-        <h4 style={{ color: '#4ade80', fontSize: 12, marginBottom: 8, opacity: 0.8 }}>GROWTH LOG</h4>
+        <h4 style={{ color: '#228B22', fontSize: 11, marginBottom: 6 }}>GROWTH LOG</h4>
         <AnimatePresence mode="popLayout">
-          {events.slice(-4).map((event, i) => (
+          {events.slice(-3).map((event, i) => (
             <motion.div
               key={event.timestamp}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1 - i * 0.2, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              style={{
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: 11,
-                marginBottom: 4,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1 - i * 0.25, x: 0 }}
+              exit={{ opacity: 0 }}
+              style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginBottom: 2 }}
             >
-              <span>{event.type === 'sprout' ? '🌱' : event.type === 'evolve' ? '✨' : event.type === 'bloom' ? '🌸' : event.type === 'fruit' ? '🍎' : '💫'}</span>
-              {event.message}
+              {event.type === 'sprout' ? '🌱' : event.type === 'evolve' ? '✨' : event.type === 'bloom' ? '🌸' : '🍎'} {event.message}
             </motion.div>
           ))}
         </AnimatePresence>
         {events.length === 0 && (
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>
-            Press play to start auto-growth...
-          </p>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10 }}>Press play to grow...</p>
         )}
-      </motion.div>
+      </div>
 
       {/* Message Toast */}
       <AnimatePresence>
         {message && (
           <motion.div
-            initial={{ y: 100, opacity: 0, scale: 0.8 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 100, opacity: 0, scale: 0.8 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 50, opacity: 0 }}
             style={{
               position: 'absolute',
-              bottom: 24,
+              bottom: 20,
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 100,
-              background: 'rgba(0,0,0,0.9)',
-              padding: '12px 24px',
-              borderRadius: 12,
+              background: 'rgba(0,0,0,0.85)',
+              padding: '10px 20px',
+              borderRadius: 8,
               color: '#fff',
               fontWeight: 500,
-              border: '1px solid rgba(74, 222, 128, 0.5)',
-              boxShadow: '0 0 30px rgba(74, 222, 128, 0.3)',
+              fontSize: 13,
             }}
           >
             {message}
@@ -561,28 +443,22 @@ function TreeVisualization() {
         )}
       </AnimatePresence>
 
-      {/* Instructions */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
+      {/* Evolution Guide */}
+      <div
         style={{
           position: 'absolute',
-          bottom: 16,
-          right: 16,
+          bottom: 12,
+          right: 12,
           zIndex: 10,
           background: 'rgba(0,0,0,0.6)',
-          padding: '12px 16px',
-          borderRadius: 10,
-          maxWidth: 220,
+          padding: '10px 14px',
+          borderRadius: 8,
         }}
       >
-        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, lineHeight: 1.5 }}>
-          <strong style={{ color: '#4ade80' }}>Auto-Growth Mode:</strong><br />
-          Press ▶ to watch the tree grow automatically with smooth animations!<br /><br />
-          <strong style={{ color: '#a78bfa' }}>Evolution:</strong> 🌱→🌿→🌳→🌸→🍎
+        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, lineHeight: 1.4 }}>
+          <strong style={{ color: '#228B22' }}>Growth:</strong> 🌰 → 🌱 → 🌿 → 🌸 → 🍎
         </p>
-      </motion.div>
+      </div>
 
       {/* React Flow Canvas */}
       <ReactFlow
@@ -617,20 +493,19 @@ function TreeVisualization() {
       >
         <Controls
           style={{
-            background: 'rgba(0,0,0,0.7)',
-            borderRadius: 8,
-            border: `1px solid ${theme.branch.glowColor}30`,
+            background: 'rgba(0,0,0,0.6)',
+            borderRadius: 6,
+            border: '1px solid rgba(255,255,255,0.1)',
           }}
         />
         <MiniMap
-          nodeStrokeColor={theme.branch.glowColor}
-          nodeColor={theme.stages.flower.primaryColor}
+          nodeStrokeColor="#228B22"
+          nodeColor="#32CD32"
           nodeBorderRadius={50}
-          maskColor="rgba(0,0,0,0.8)"
+          maskColor="rgba(0,0,0,0.7)"
           style={{
-            background: 'rgba(0,0,0,0.7)',
-            borderRadius: 8,
-            border: `1px solid ${theme.branch.glowColor}30`,
+            background: 'rgba(0,0,0,0.6)',
+            borderRadius: 6,
           }}
         />
       </ReactFlow>
@@ -638,7 +513,6 @@ function TreeVisualization() {
   );
 }
 
-// Wrap with ReactFlowProvider for useReactFlow hook
 export default function App() {
   return (
     <ReactFlowProvider>

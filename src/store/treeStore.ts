@@ -29,7 +29,7 @@ const branchNames = [
 const getLayoutedElements = (nodes: AppNode[], edges: AppEdge[]): { nodes: AppNode[]; edges: AppEdge[] } => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: 'TB', ranksep: 100, nodesep: 80 });
+  dagreGraph.setGraph({ rankdir: 'BT', ranksep: 80, nodesep: 60 }); // BT = bottom-to-top for real tree growth
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
