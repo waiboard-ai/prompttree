@@ -73,6 +73,9 @@ interface TreeState {
   // Node ID counter
   nodeIdCounter: number;
 
+  // Theme
+  currentTheme: string;
+
   // Pending animations queue
   pendingAnimations: Array<{
     type: 'grow' | 'evolve' | 'prune';
@@ -98,6 +101,9 @@ interface TreeState {
   stopAutoGrowth: () => void;
   togglePause: () => void;
   setGrowthSpeed: (speed: number) => void;
+
+  // Theme
+  setTheme: (themeId: string) => void;
 
   // Auto-growth tick
   autoGrowthTick: () => void;
@@ -131,6 +137,7 @@ export const useTreeStore = create<TreeState>()(
     growthSpeed: 2000, // 2 seconds between ticks
     isPaused: false,
     nodeIdCounter: 1,
+    currentTheme: 'cherry-blossom',
     pendingAnimations: [],
 
     setNodes: (nodes) => set({ nodes }),
@@ -299,6 +306,10 @@ export const useTreeStore = create<TreeState>()(
       set({ growthSpeed: speed });
     },
 
+    setTheme: (themeId) => {
+      set({ currentTheme: themeId });
+    },
+
     autoGrowthTick: () => {
       const state = get();
 
@@ -331,7 +342,7 @@ export const useTreeStore = create<TreeState>()(
     },
 
     reset: () => {
-      set({
+      set(state => ({
         nodes: [createInitialNode()],
         edges: [],
         sunlight: 100,
@@ -340,8 +351,9 @@ export const useTreeStore = create<TreeState>()(
         isAutoGrowing: false,
         isPaused: false,
         nodeIdCounter: 1,
+        currentTheme: state.currentTheme, // preserve theme on reset
         pendingAnimations: [],
-      });
+      }));
     },
   }))
 );

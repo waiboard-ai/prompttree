@@ -2,8 +2,6 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import {
   ReactFlow,
   Controls,
-  Background,
-  BackgroundVariant,
   MiniMap,
   useReactFlow,
   ReactFlowProvider,
@@ -13,8 +11,11 @@ import '@xyflow/react/dist/style.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import TreeNodeComponent from './components/TreeNode';
 import AnimatedEdgeComponent from './components/AnimatedEdge';
+import ThemeSelector from './components/ThemeSelector';
+import AmbientBackground from './components/AmbientBackground';
 import { useTreeStore, useNodes, useEdges, useResources, useSimulationState } from './store/treeStore';
 import { mockGrowthService, type GrowthEvent } from './services/mockGrowthService';
+import { getThemeById } from './themes/treeThemes';
 import type { AppNode, TreeNode } from './types';
 
 const nodeTypes = { treeNode: TreeNodeComponent };
@@ -35,6 +36,8 @@ function TreeVisualization() {
   const edges = useEdges();
   const { sunlight, water, score } = useResources();
   const { isAutoGrowing, isPaused } = useSimulationState();
+  const currentTheme = useTreeStore(s => s.currentTheme);
+  const theme = getThemeById(currentTheme);
 
   const growBranch = useTreeStore(s => s.growBranch);
   const evolveNode = useTreeStore(s => s.evolveNode);
@@ -136,6 +139,9 @@ function TreeVisualization() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+      {/* Themed ambient background */}
+      <AmbientBackground />
+
       {/* Header */}
       <motion.div
         initial={{ y: -100 }}
@@ -153,11 +159,19 @@ function TreeVisualization() {
           alignItems: 'center',
         }}
       >
-        <h1 style={{ color: '#4ade80', fontSize: 28, fontWeight: 700, textShadow: '0 0 20px #4ade8050' }}>
-          Promptree
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <h1 style={{
+            color: theme.branch.glowColor,
+            fontSize: 28,
+            fontWeight: 700,
+            textShadow: `0 0 20px ${theme.branch.glowColor}50`
+          }}>
+            Promptree
+          </h1>
+          <ThemeSelector />
+        </div>
         <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-          <div style={{ color: '#a78bfa', fontSize: 14 }}>
+          <div style={{ color: theme.ambient.particleColors[0], fontSize: 14 }}>
             Nodes: {nodes.length}
           </div>
           <div style={{ color: '#fbbf24', fontSize: 20, fontWeight: 600 }}>
@@ -601,28 +615,22 @@ function TreeVisualization() {
         proOptions={{ hideAttribution: true }}
         style={{ background: 'transparent' }}
       >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={30}
-          size={2}
-          color="rgba(74, 222, 128, 0.15)"
-        />
         <Controls
           style={{
             background: 'rgba(0,0,0,0.7)',
             borderRadius: 8,
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: `1px solid ${theme.branch.glowColor}30`,
           }}
         />
         <MiniMap
-          nodeStrokeColor="#4ade80"
-          nodeColor="#22c55e"
+          nodeStrokeColor={theme.branch.glowColor}
+          nodeColor={theme.stages.flower.primaryColor}
           nodeBorderRadius={50}
           maskColor="rgba(0,0,0,0.8)"
           style={{
             background: 'rgba(0,0,0,0.7)',
             borderRadius: 8,
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: `1px solid ${theme.branch.glowColor}30`,
           }}
         />
       </ReactFlow>
