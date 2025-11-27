@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import { useShallow } from 'zustand/shallow';
 import type { TreeNode, TreeNodeData, NodeStage, AppNode, AppEdge } from '../types';
 import type { Edge } from '@xyflow/react';
 import dagre from 'dagre';
@@ -361,13 +362,17 @@ export const useTreeStore = create<TreeState>()(
 // Selector hooks for optimized re-renders
 export const useNodes = () => useTreeStore(state => state.nodes);
 export const useEdges = () => useTreeStore(state => state.edges);
-export const useResources = () => useTreeStore(state => ({
-  sunlight: state.sunlight,
-  water: state.water,
-  score: state.score
-}));
-export const useSimulationState = () => useTreeStore(state => ({
-  isAutoGrowing: state.isAutoGrowing,
-  isPaused: state.isPaused,
-  growthSpeed: state.growthSpeed,
-}));
+export const useResources = () => useTreeStore(
+  useShallow(state => ({
+    sunlight: state.sunlight,
+    water: state.water,
+    score: state.score
+  }))
+);
+export const useSimulationState = () => useTreeStore(
+  useShallow(state => ({
+    isAutoGrowing: state.isAutoGrowing,
+    isPaused: state.isPaused,
+    growthSpeed: state.growthSpeed,
+  }))
+);
